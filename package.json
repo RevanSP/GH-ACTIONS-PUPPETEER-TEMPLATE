@@ -1,0 +1,16 @@
+{
+  "name": "puppeteer-gh-actions-scraper",
+  "version": "1.0.0",
+  "description": "A demo project for scraping with Puppeteer on GitHub Actions.",
+  "main": "scrape.js",
+  "keywords": [
+    "puppeteer",
+    "scraping",
+    "github-actions"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "puppeteer": "^22.12.1"
+  }
+} 

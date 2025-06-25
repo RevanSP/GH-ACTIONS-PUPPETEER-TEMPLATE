@@ -1,0 +1,56 @@
+name: Scrape Latest Data
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 23 * * *' # 23:30 UTC = 06:30 WIB
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    env:
+      TZ: 'Asia/Jakarta'
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run scraper
+        run: |
+          echo "⏰ Current time:"
+          date
+          echo "🌍 Timezone: $TZ"
+          echo "📅 Schedule: 30 23 * * * (23:30 UTC = 06:30 WIB)"
+          echo "🔍 Event type: ${{ github.event_name }}"
+          echo "📊 Workflow run ID: ${{ github.run_id }}"
+          echo "📋 Repository: ${{ github.repository }}"
+          echo "🌐 Next scheduled run: Tomorrow at 06:30 WIB (if schedule is active)"
+          node scrape.js
+
+      - name: Commit and push if data changed
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'chore: auto-scrape new data'
+          file_pattern: 'public/data.json'
+          commit_user_name: 'GitHub Actions'
+          commit_user_email: 'actions@github.com'
+          commit_author: 'github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>'
+
+      - name: Manual Trigger Test
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "🎯 Manual trigger berhasil!"
+          echo "⏰ Waktu: $(date)"
+          echo "📅 Schedule akan aktif besok jam 06:30 WIB"

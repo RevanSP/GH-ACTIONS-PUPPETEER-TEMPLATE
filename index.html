@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puppeteer GitHub Actions Scraper</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-amber-100 text-black font-sans antialiased">
+
+    <div class="container mx-auto max-w-4xl px-4 py-12">
+        <header class="text-center mb-12">
+            <h1 class="text-5xl font-black text-black mb-2">A Guide to Scraping with Puppeteer & GitHub Actions</h1>
+            <p class="text-lg text-gray-800">An example of automating web scraping using <strong>Puppeteer</strong> and
+                <strong>GitHub Actions</strong>.</p>
+        </header>
+
+        <main class="bg-white rounded-none border-2 border-black p-8 mb-10 shadow-[8px_8px_0px_#000]">
+            <h2 class="text-2xl font-bold text-black mb-4 border-b-2 border-black pb-2">How It Works</h2>
+            <ol class="list-decimal list-inside space-y-3">
+                <li>A Node.js script (<code>scrape.js</code>) uses Puppeteer to open <a
+                        href="http://quotes.toscrape.com" target="_blank"
+                        class="text-blue-700 font-bold hover:underline">quotes.toscrape.com</a>.</li>
+                <li>The script scrapes the first 10 quotes.</li>
+                <li>The data is saved to a file: <code>public/data.json</code>.</li>
+                <li>A GitHub Actions workflow (<code>.github/workflows/scrape.yml</code>) runs this script on a
+                    schedule.</li>
+                <li>The workflow will push the new <code>data.json</code> file to the repository if there are changes.
+                </li>
+                <li>This page fetches the data from <code>data.json</code> and displays it below.</li>
+            </ol>
+        </main>
+
+        <section class="bg-fuchsia-200 rounded-none border-2 border-black p-8 mb-10 shadow-[8px_8px_0px_#000]">
+            <h2 class="text-2xl font-bold text-black mb-4">Configuration</h2>
+            <ul class="list-disc list-inside space-y-3">
+                <li>
+                    You can change the schedule by editing the <code>cron</code> value inside
+                    <code>.github/workflows/scrape.yml</code>. Find the <strong>schedule</strong> event to adjust the
+                    timing.
+                </li>
+                <li>
+                    You can also configure which script to run. In the same file, find the step named <strong>Run
+                        scraper</strong> and change the command in the <code>run</code> property, for example:
+                    <code>run: node your-other-script.js</code>.
+                </li>
+            </ul>
+        </section>
+
+        <aside class="bg-lime-300 rounded-none border-2 border-black p-8 mb-12 shadow-[8px_8px_0px_#000]">
+            <h2 class="text-2xl font-bold text-black mb-4">How to Run Locally</h2>
+            <ol class="list-decimal list-inside space-y-2">
+                <li>Clone this repository.</li>
+                <li>Install dependencies: <code
+                        class="bg-white text-sm font-mono rounded-none px-2 py-1 border border-black">npm install</code>
+                </li>
+                <li>Run the scrape script: <code
+                        class="bg-white text-sm font-mono rounded-none px-2 py-1 border border-black">node scrape.js</code>
+                </li>
+                <li>Open the <code>index.html</code> file in your browser.</li>
+            </ol>
+        </aside>
+
+        <aside class="bg-blue-200 rounded-none border-2 border-black p-8 mb-12 shadow-[8px_8px_0px_#000]">
+            <h2 class="text-2xl font-bold text-black mb-4">How to Trigger Workflow</h2>
+            <p class="mb-4 text-black">After pushing the code for the first time, the workflow will NOT run
+                automatically. You need to trigger it manually:</p>
+            <ol class="list-decimal list-inside space-y-2">
+                <li>Go to the <strong>Actions</strong> tab in your GitHub repository.</li>
+                <li>Find the <strong>"Scrape Latest Data"</strong> workflow.</li>
+                <li>Click the <strong>dropdown button</strong> next to "Run workflow".</li>
+                <li>Select the <strong>branch</strong> where the workflow should run (usually <code>main</code>).</li>
+                <li>Click the <strong>"Run workflow"</strong> button.</li>
+                <li>The workflow will start running and scrape the latest data.</li>
+            </ol>
+            <p class="mt-4 text-sm text-gray-700"><strong>Note:</strong> After the first manual trigger, the workflow
+                will run automatically every day at 06:30 WIB via the scheduled cron job.</p>
+        </aside>
+
+        <section id="results">
+            <h2 class="text-4xl font-black text-center text-black mb-8">Scraped Results: Top 10 Quotes</h2>
+            <div id="data-container" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Data will be loaded here by JavaScript -->
+                <p class="text-center md:col-span-2 text-gray-600">Loading data...</p>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('data-container');
+
+            fetch('public/data.json')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    container.innerHTML = ''; // Clear "Loading data..." message
+                    if (data && data.length > 0) {
+                        data.forEach(item => {
+                            const card = document.createElement('div');
+                            card.className = 'bg-white rounded-none border-2 border-black p-6 flex flex-col justify-between transition-all duration-200 shadow-[4px_4px_0px_#000] hover:shadow-[8px_8px_0px_#000] hover:-translate-y-1 hover:-translate-x-1';
+
+                            const blockquote = document.createElement('blockquote');
+                            blockquote.className = 'text-lg italic text-black mb-4';
+                            blockquote.textContent = `"${item.text}"`;
+
+                            const author = document.createElement('p');
+                            author.className = 'text-right font-bold text-black mt-2';
+                            author.textContent = `— ${item.author}`;
+
+                            card.appendChild(blockquote);
+                            card.appendChild(author);
+                            container.appendChild(card);
+                        });
+                    } else {
+                        container.innerHTML = '<div class="md:col-span-2 bg-yellow-300 border-2 border-black p-6 shadow-[4px_4px_0px_#000]"><p class="font-bold">No data to display.</p><p>Run the scrape script first with <code>npm start</code>.</p></div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    container.innerHTML = `<div class="md:col-span-2 bg-red-500 text-white border-2 border-black p-6 shadow-[4px_4px_0px_#000]" role="alert"><p class="font-bold">Failed to load data!</p><p>Make sure the <code>public/data.json</code> file exists. Try running the scraper with <code>node scrape.js</code>.</p></div>`;
+                });
+        });
+    </script>
+
+</body>
+
+</html>
