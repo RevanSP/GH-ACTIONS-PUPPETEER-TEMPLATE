@@ -59,6 +59,9 @@
                 <li>Run the scrape script: <code
                         class="bg-white text-sm font-mono rounded-none px-2 py-1 border border-black">node scrape.js</code>
                 </li>
+                <li class="text-sm text-gray-800">The <code>headless</code> option in <code>scrape.js</code> determines whether the browser is visible (false) or hidden (true). Change <code>headless: true</code> to <code>false</code> if you want to see the scraping process in the browser window.</li>
+                <li class="text-sm text-gray-800">When running locally, the script will automatically try several common browser paths (Chrome/Edge). If no browser is found, make sure the paths in the <code>localCandidates</code> array in <code>scrape.js</code> match the actual browser location on your computer. You can copy and paste the path from Windows Explorer; the script will automatically normalize the format.</li>
+                <li class="text-sm text-gray-800">How to copy the browser path in Windows: Search for your browser on the desktop or in the search bar, right-click and choose "Open file location". If it still shows a shortcut, right-click the shortcut again and select "Open file location" until you find the actual <code>chrome.exe</code> or <code>msedge.exe</code> file. Then right-click that file and choose "Copy as path". Paste this path into the <code>localCandidates</code> array in <code>scrape.js</code>.</li>
                 <li>Open the <code>index.html</code> file in your browser.</li>
             </ol>
         </aside>

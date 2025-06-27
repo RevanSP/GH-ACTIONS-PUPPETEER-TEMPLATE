@@ -1,17 +1,35 @@
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-core');
 const fs = require('fs');
 const path = require('path');
 
+function getExecutablePath() {
+  if (process.env.GITHUB_ACTIONS) {
+    return process.env.CHROME_BIN || '/usr/bin/google-chrome'; // Github Actions Browser path
+  }
+
+  const candidates = [
+    process.env.CHROME_BIN,
+    String.raw`C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe`, // Your path to Browser
+    null
+  ];
+
+  return candidates.find(p => p && fs.existsSync(p));
+}
+
 const today = new Date();
-const isEvenDay = today.getDate() % 2 === 0;
-const pageUrl = isEvenDay 
-  ? 'https://quotes.toscrape.com/page/2/' 
+const pageUrl = today.getDate() % 2 === 0
+  ? 'https://quotes.toscrape.com/page/2/'
   : 'https://quotes.toscrape.com/';
 
-console.log(`📅 Hari ini: ${today.toDateString()} | 📄 URL: ${pageUrl}`);
+console.log(`📅 ${today.toDateString()} | 📄 ${pageUrl}`);
 
 (async () => {
-  const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+  const browser = await puppeteer.launch({
+    headless: true, // true = hidden browser, false = visible browser
+    executablePath: getExecutablePath(),
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
+  }); 45
+
   const page = await browser.newPage();
   await page.goto(pageUrl, { waitUntil: 'networkidle2' });
 
@@ -27,6 +45,8 @@ console.log(`📅 Hari ini: ${today.toDateString()} | 📄 URL: ${pageUrl}`);
   const outputDir = path.join(__dirname, 'public');
   if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir);
 
-  fs.writeFileSync(path.join(outputDir, 'data.json'), JSON.stringify(data, null, 2), 'utf-8');
-  console.log(`✅ Data scraped and saved to ${path.join(outputDir, 'data.json')}`);
+  const outputPath = path.join(outputDir, 'data.json');
+  fs.writeFileSync(outputPath, JSON.stringify(data, null, 2), 'utf-8');
+
+  console.log(`✅ Data scraped and saved to ${outputPath}`);
 })();
